@@ -8,6 +8,7 @@ def display_menu():
     print("d. Dividir.")
     print("e. Potencia.")
     print("f. Fibonacci.")
+    print("g. Operaciones con lista de números.")
     print("q. Salir.")
 
 def get_user_option():
@@ -21,6 +22,19 @@ def get_number(prompt):
         except ValueError:
             print("Por favor ingrese un número válido.")
 
+def read_list_from_input():
+    numbers = []
+    print("Ingrese 15 números enteros:")
+    for _ in range(15):
+        number = int(input())
+        numbers.append(number)
+    return numbers
+
+def save_list_to_file(numbers):
+    with open("number_list.txt", "w") as file:
+        for number in numbers:
+            file.write(str(number) + "\n")
+
 def call_rpc(option):
     try:
         proxy = xmlrpc.client.ServerProxy("http://localhost:8000/")
@@ -32,7 +46,8 @@ def call_rpc(option):
             'c': ('multiplicar', 2),
             'd': ('dividir', 2),
             'e': ('potencia', 2),
-            'f': ('fibonacci', 1)
+            'f': ('fibonacci', 1),
+            'g': ('operaciones_lista', 0)
         }
 
         if option == 'q':
@@ -44,13 +59,32 @@ def call_rpc(option):
 
         operation_name, num_args = operations[option]
 
-        args = []
-        for i in range(num_args):
-            args.append(get_number(f"Ingrese el argumento {i + 1}: "))
+        if num_args > 0:
+            args = []
+            for i in range(num_args):
+                args.append(get_number(f"Ingrese el argumento {i + 1}: "))
 
-        result = getattr(proxy, operation_name)(*args)
+            result = getattr(proxy, operation_name)(*args)
+            print("El resultado es:", result)
+        else:
+            if operation_name == 'operaciones_lista':
+                access = login()
+                if not access:
+                    print("Acceso no autorizado.")
+                print("Acceso autorizado.")
+                numbers = read_list_from_input()
+                save_list_to_file(numbers)
+                operation_name = 'Invertir Lista'
+                inverted_list = getattr(proxy, operation_name)("number_list.txt")
+                print("Lista invertida guardada en 'inverted_list.txt':")
+                with open(inverted_list, "r") as file:
+                    inverted_content = file.readlines()
+                    for line in inverted_content:
+                        print(line.rstrip()) 
 
-        print("El resultado es:", result)
+                operation_name = 'Repetir Número'
+                repeated_number = getattr(proxy, operation_name)("number_list.txt")
+                print("El número más repetido en la lista es:", repeated_number)
 
     except Exception as e:
         print("Ocurrió un error al llamar a la función RPC:", e)
@@ -69,15 +103,11 @@ def login():
 
 if __name__ == "__main__":
     try:
-        access = login()
-        if not access:
-            print("Acceso no autorizado.")
-        else:
-            while True:
-                display_menu()
-                option = get_user_option()
+        while True:
+            display_menu()
+            option = get_user_option()
 
-                if not call_rpc(option):
-                    break
+            if not call_rpc(option):
+                break
     except KeyboardInterrupt:
         print("\nPrograma finalizado.")

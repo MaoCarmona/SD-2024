@@ -47,7 +47,7 @@ class MathOperations:
             with open('inverted_list.txt', 'w') as output_file:
                 for num in inverted_list:
                     output_file.write(str(num) + '\n')
-            return "List inverted and saved to inverted_list.txt."
+            return "inverted_list.txt."
         except Exception as e:
             return "Error: " + str(e)
 
@@ -63,7 +63,7 @@ class MathOperations:
                 else:
                     counter[num] = 1
             most_common = max(counter, key=counter.get)
-            return f"The most repeated number is {most_common}."
+            return most_common
         except Exception as e:
             return "Error: " + str(e)
 

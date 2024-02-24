@@ -1,3 +1,7 @@
+## WORKSHOP GUIDE
+![Alt text](image.png)
+
+
 ```sh
 ## Install python
 winget install python
